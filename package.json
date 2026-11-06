@@ -1,0 +1,14 @@
+{
+  "name": "tanotado-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tánotado: gastos da casa anotados pelo WhatsApp (app de teste)",
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
+  }
+}
