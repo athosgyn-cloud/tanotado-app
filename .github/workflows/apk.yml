@@ -3,6 +3,7 @@ name: Gerar APK de teste
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -25,6 +26,7 @@ jobs:
       - name: Criar projeto Android
         run: |
           npx cap add android
+          cp native/MainActivity.java android/app/src/main/java/br/app/tanotado/MainActivity.java
           npx capacitor-assets generate --android
           npx cap sync android
       - name: Compilar APK
@@ -37,6 +39,7 @@ jobs:
           name: Tanotado-teste
           path: Tanotado-teste.apk
       - name: Publicar na aba Releases
+        if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: teste-${{ github.run_number }}

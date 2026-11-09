@@ -5,6 +5,7 @@
   "description": "Tánotado: gastos da casa anotados pelo WhatsApp (app de teste)",
   "dependencies": {
     "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.1.2",
     "@capacitor/cli": "^7.0.0",
     "@capacitor/core": "^7.0.0"
   },
