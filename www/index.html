@@ -13,8 +13,22 @@ body{padding:0!important;background:var(--bg)!important;overflow:hidden}
 .stage{max-width:none!important;height:100dvh}
 .phone{width:100%!important;max-width:none!important;height:100dvh!important;min-height:0!important;padding:0!important;background:none!important;box-shadow:none!important;border-radius:0!important}
 .phone .apphost{border-radius:0!important;border:0!important}
-.app.m .scroll{padding-top:calc(18px + env(safe-area-inset-top,0px))}
-.nav{height:calc(84px + env(safe-area-inset-bottom,0px))!important}
+:root{--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--kb:0px;padding-top:0!important;padding-bottom:0!important}
+html{scroll-padding-top:0!important}
+/* Barras do Android: --sat (topo), --sab (barra de navegação) e --kb (teclado) vêm do app nativo */
+.app.m .scroll{padding-top:calc(18px + var(--sat));padding-bottom:calc(112px + var(--sab))}
+.app.m .scroll.chatmode{padding:var(--sat) 0 0!important}
+.nav{height:calc(84px + var(--sab))!important}
+.sheet{padding-bottom:calc(24px + max(var(--sab),var(--kb)))!important;max-height:calc(100% - var(--sat) - 16px)!important}
+.composer{padding-bottom:calc(12px + max(var(--sab),var(--kb)))!important}
+.toast{top:calc(14px + var(--sat))!important}
+.goal .acts .linkbtn{display:inline-flex;align-items:center;gap:5px;padding:8px 4px}
+.goal .acts .linkbtn svg{width:16px;height:16px}
+.btn.danger{background:var(--bad-soft);color:var(--bad);box-shadow:none}
+.outro{display:flex;gap:8px}.outro input{flex:1}
+.outro .btn{flex:none}
+.confirm{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:16px;background:var(--bad-soft)}
+.confirm p{margin:0;font-size:14px}
 </style><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Tánotado</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -541,6 +555,7 @@ const ICON={
  plan:sv('<path d="M12 3l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.8z"/>'),
  send:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.3 10l12.4 2-12.4 2z"/></svg>',
  arrow:sv('<path d="M5 12h14M13 6l6 6-6 6"/>',2.4),
+ edit:sv('<path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3zM13.5 8.5l3 3"/>',1.8),
  rise:sv('<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>'),
  piggy:sv('<path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/><path d="M2 9v1c0 1.1.9 2 2 2h1"/><path d="M16 11h.01"/>'),
  check:sv('<path d="M5 12.5l4.5 4.5L19 7"/>',2.6)
@@ -712,7 +727,7 @@ function goalCard(f){
   :`<p>Guardando o que sobra hoje (${brl0(f.usa)} por mês), vocês chegam lá em <b>${f.pace?mlabel(f.pace):'um prazo ainda indefinido'}</b>${f.pace?`, ${f.pace-g.alvo} ${f.pace-g.alvo===1?'mês':'meses'} depois do planejado`:''}. Para manter ${mlabel(g.alvo)}, faltam ${brl0(f.extra)} por mês.</p><p><b>Recomendamos estes ajustes:</b></p>
    <div class="cuts">${f.cuts.list.map(c=>`<div class="cut">${tile(c.c,'sm')}<span>${esc(c.c.nome)}: reduzir ${c.pct}%</span><b class="num">+${brl0(c.v)}/mês</b></div>`).join('')}</div>${f.cuts.rest>0?`<p class="sub">Mesmo com esses ajustes, faltariam ${brl0(f.cuts.rest)} por mês. Se preferir, dá para mudar o prazo para ${mlabel(f.pace)}.</p>`:''}`;
  return `<div class="card goal"><div class="gh">${ring(p,56,done?'var(--good)':'var(--amber)')}<div class="t"><b>${esc(g.nome)}</b><small class="num">${brl0(g.guardado)} de ${brl0(g.valor)} · até ${mlabel(g.alvo)}</small></div><span class="chip ${done||f.ok?'ok':'warn'}">${done?'Batida':f.ok?'No caminho':'Precisa ajuste'}</span></div>
- ${txt}${done?'':goalChart(f)}<div class="acts">${done?'':`<button class="btn sm" data-guardar="${g.id}">+ Guardar dinheiro</button>`}<button class="linkbtn" data-delmeta="${g.id}" style="color:var(--muted)">Remover meta</button></div></div>`;
+ ${txt}${done?'':goalChart(f)}<div class="acts">${done?'':`<button class="btn sm" data-guardar="${g.id}">+ Guardar dinheiro</button>`}<button class="linkbtn" data-editmeta="${g.id}" aria-label="Editar ou excluir ${esc(g.nome)}">${ICON.edit}Editar</button></div></div>`;
 }
 
 /* ---------- Pedaços de tela ---------- */
@@ -806,7 +821,7 @@ function viewGastos(){
  if(f!=='all'){const c=f==='in'?IN_CAT:f==='out'?{ic:'📤',cor:'#D2452F',nome:'Saídas'}:cat(f);const n=rows.length,t=rows.reduce((s,m)=>s+m.v,0);const lim=c.orc?` de ${brl0(c.orc)}`:'';
   banner=`<div class="card fband">${tile(c)}<div class="t"><b>Mostrando só ${esc(c.nome)}</b><span class="num">${n} ${n===1?'lançamento':'lançamentos'} · ${brl(t)}${lim}</span></div><button class="mini ghost" data-filt="all">Ver todos</button></div>`}
  const dn=f==='all'?donutCard():'';
- if(S.dev==='m') return h+stats+dn+segs+filters+banner+`<div style="margin-top:-10px">${list}</div>`;
+ if(S.dev==='m') return h+stats+dn+(f==='all'?`<div class="card"><h3>Orçamento do mês</h3><p class="sub" style="margin:-6px 0 10px">Quanto cada categoria pode gastar em novembro.</p>${catRows()}</div>`:'')+segs+filters+banner+`<div style="margin-top:-10px">${list}</div>`;
  return h+stats+segs+filters+banner+`<div class="cols"><div class="col" style="gap:0">${list}</div><div class="col">${dn}<div class="card"><h3>Orçamento por categoria</h3>${catRows()}<p class="sub" style="margin-top:12px">Os limites são sugeridos com base no primeiro mês de uso, e vocês podem ajustar quando quiserem.</p></div></div></div>`;
 }
 function viewContas(){
@@ -850,7 +865,7 @@ function viewMetas(){
     <p class="sub">Também dá para pedir pelo WhatsApp: "quero juntar 4 mil pra trocar o sofá até março".</p></form>`;
  const ins=`<div class="ins"><div class="ic">${ICON.tip}</div><div><b>Vocês costumam guardar ${brl0(F.sobra)} por mês</b><span>É a média do que sobrou nos últimos 3 meses. A gente usa esse valor para prever quando cada meta fica pronta.</span></div></div>`;
  const cards=F.list.map(goalCard).join('')||'<div class="card"><p class="sub">Nenhuma meta ainda. Crie a primeira.</p></div>';
- const h=`<div><h2 class="page">Metas</h2><p class="sub">Conte o que vocês querem conquistar. A gente mostra se cabe no orçamento, quando fica pronto e o que dá para ajustar.</p></div>`;
+ const h=`<div><h2 class="page">Metas</h2><p class="sub">Metas são objetivos para juntar dinheiro, como uma viagem, um carro ou uma reserva. A gente mostra se cabe no orçamento, quando fica pronto e o que dá para ajustar.</p><p class="sub" style="margin-top:6px">O limite de gasto de cada categoria fica em <button class="linkbtn" data-gv="lista">Gastos, no Orçamento do mês</button>.</p></div>`;
  if(S.dev==='m') return h+ins+cards+form;
  return h+`<div class="cols even"><div class="col">${cards}</div><div class="col">${ins}${form}</div></div>`;
 }
@@ -935,7 +950,21 @@ function sheetHtml(){
   const g=S.metas.find(x=>x.id===sh.gid),falta=Math.max(g.valor-g.guardado,0);
   body=`<div class="grab"></div><div class="sh-head"><h3>Guardar para a meta</h3><button data-close aria-label="Fechar">×</button></div>
   <div class="preview">${ring(g.guardado/g.valor,52)}<div><b>${esc(g.nome)}</b><div class="sub num" style="margin:0">Faltam ${brl0(falta)}</div></div></div>
-  <div class="sug">${[100,300,500].filter(v=>v<falta).map(v=>`<button data-save="${v}">+ ${brl0(v)}</button>`).join('')}<button data-save="${falta}" style="background:var(--amber-soft);color:var(--amber-ink);font-weight:700">+ ${brl0(falta)} (o que falta)</button></div>`;
+  <div class="sug">${[100,300,500].filter(v=>v<falta).map(v=>`<button data-save="${v}">+ ${brl0(v)}</button>`).join('')}<button data-save="${falta}" style="background:var(--amber-soft);color:var(--amber-ink);font-weight:700">+ ${brl0(falta)} (o que falta)</button></div>
+  <label class="fl" for="gOutro">Outro valor</label><div class="outro"><input id="gOutro" inputmode="decimal" placeholder="Ex.: 250" autocomplete="off"><button class="btn" data-saveoutro>Guardar</button></div>
+  <p class="sub" style="margin:0">Aqui vocês só anotam quanto separaram. O dinheiro continua na conta de vocês.</p>`;
+ }else if(sh.mode==='meta'){
+  const g=S.metas.find(x=>x.id===sh.gid);
+  let opts='';for(let k=1;k<=30;k++)opts+=`<option value="${k}" ${k===g.alvo?'selected':''}>${mlabel(k)}</option>`;
+  body=`<div class="grab"></div><div class="sh-head"><h3>Editar meta</h3><button data-close aria-label="Fechar">×</button></div>
+  ${sh.confirm?`<div class="confirm"><p><b>Excluir "${esc(g.nome)}"?</b></p><p>A meta e o gráfico somem do app. Isso não mexe em nenhum dinheiro.</p><button class="btn danger block" data-delmeta="${g.id}">Sim, excluir meta</button><button class="btn ghost block" data-delno>Não, manter</button></div>`:`
+  <form class="form" id="metaEdit" style="display:flex;flex-direction:column;gap:12px">
+  <label class="fl" for="mNome">Objetivo</label><input id="mNome" value="${esc(g.nome)}" autocomplete="off" required>
+  <div class="row2"><div><label class="fl" for="mValor">Quanto custa</label><input id="mValor" inputmode="decimal" value="${fmt(g.valor).replace(',00','')}" autocomplete="off"></div>
+  <div><label class="fl" for="mAlvo">Para quando</label><select id="mAlvo">${opts}</select></div></div>
+  <label class="fl" for="mGuard">Já guardado</label><input id="mGuard" inputmode="decimal" value="${fmt(g.guardado).replace(',00','')}" autocomplete="off">
+  <button class="btn block">Salvar alterações</button></form>
+  <button class="btn danger block" data-delask>Excluir meta</button>`}`;
  }else{
   const g=sh.gid?S.mov.find(x=>x.id===sh.gid):null;
   if(sh.mode==='pick'){
@@ -968,7 +997,7 @@ function render(){
  document.querySelectorAll('#daySeg button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.day===S.day));
  HIDE=!!S.hide&&S.tab!=='chat';const V={home:viewHome,chat:viewChat,gastos:viewGastos,metas:viewMetas,casal:viewCasal,plano:viewPlano,avisos:viewAvisos}[S.tab]();HIDE=false;
  const toast=S.toast?`<div class="toast ${S.toast.fresh?'fresh':''}" role="status"><div class="ck"><svg width="22" height="18" viewBox="0 0 20 16"><path d="M2.5 8.5l5 5L17.5 2.5" fill="none" stroke="#F2A516" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><b>${esc(S.toast.t)}</b>${S.toast.s?`<span>${esc(S.toast.s)}</span>`:''}</div></div>`:'';
- const keep=['chatIn','addIn','addVal','addDesc','catOrc','gNome','gValor','gGuard','gAlvo'].map(id=>[id,document.getElementById(id)?.value||'']);
+ const keep=['chatIn','addIn','addVal','addDesc','catOrc','gNome','gValor','gGuard','gAlvo','gOutro','mNome','mValor','mGuard','mAlvo'].map(id=>[id,document.getElementById(id)?.value||'']);
  const ae=document.activeElement,focusId=ae&&ae.id&&ae.tagName==='INPUT'?ae.id:null,selS=focusId?ae.selectionStart:null,selE=focusId?ae.selectionEnd:null;
  const prevScroll=document.querySelector('.scroll')?.scrollTop||0;
  const sheet=sheetHtml(),A=alerts().length;
@@ -1171,9 +1200,13 @@ document.addEventListener('click',e=>{
  else if(D.filtgo!==undefined){if(D.filtgo)go({tab:'gastos',gview:'lista',filt:D.filtgo})}
  else if(D.nav){const k=D.nav;if(k==='contas'||k==='cartoes'){S.hist=[];S.tab='gastos';S.gview=k;S.filt='all';S.anim=true;render()}else goTab(k)}
  else if('goback' in D){const p=S.hist.pop();if(p){Object.assign(S,p)}else{S.tab='home'}S.anim=true;render();document.querySelector('.scroll')?.scrollTo(0,0)}
- else if(D.delmeta){S.metas=S.metas.filter(g=>g.id!==+D.delmeta);flash('Meta removida')}
+ else if(D.delmeta){const g=S.metas.find(x=>x.id===+D.delmeta);S.metas=S.metas.filter(x=>x.id!==+D.delmeta);S.sheet=null;S.anim=true;flash('Meta excluída',g?g.nome:'')}
+ else if(D.editmeta){S.sheet={mode:'meta',gid:+D.editmeta};render()}
+ else if('delask' in D){S.sheet.confirm=true;render()}
+ else if('delno' in D){S.sheet.confirm=false;render()}
+ else if('saveoutro' in D){const v=parseFloat((document.getElementById('gOutro')?.value||'').replace(/\./g,'').replace(',','.'))||0;if(!(v>0)){document.getElementById('gOutro')?.focus();flash('Digite quanto vocês guardaram');return}guardar(v)}
  else if(D.guardar){S.sheet={mode:'guardar',gid:+D.guardar};render()}
- else if(D.save){const g=S.metas.find(x=>x.id===S.sheet.gid);const v=+D.save;g.guardado=Math.min(g.valor,g.guardado+v);const done=g.guardado>=g.valor;S.sheet=null;S.anim=true;flash(done?'Meta batida! 🎉':'Guardado!',done?`${g.nome}: ${brl0(g.valor)} juntos`:`+ ${brl0(v)} para ${g.nome}`);if(done)setTimeout(confetti,350)}
+ else if(D.save){guardar(+D.save)}
  else if(D.pay){pay(D.pay)}
  else if(D.do){doAct(D.do)}
  else if(D.assin){assin(D.assin)}
@@ -1208,12 +1241,53 @@ document.addEventListener('submit',e=>{
   const nome=document.getElementById('gNome').value.trim(),valor=num('gValor');if(!nome||!valor){flash('Preencha o objetivo e o valor');return}
   ['gNome','gValor','gGuard'].forEach(id=>document.getElementById(id).value='');
   S.metas.unshift({id:++seq,nome,ic:'🎯',valor,guardado:num('gGuard'),alvo:+document.getElementById('gAlvo').value});S.anim=true;flash('Previsão calculada',nome);return}
+ if(e.target.id==='metaEdit'){const num=id=>parseFloat((document.getElementById(id).value||'').replace(/\./g,'').replace(',','.'))||0;
+  const g=S.metas.find(x=>x.id===S.sheet.gid),nome=document.getElementById('mNome').value.trim(),valor=num('mValor');
+  if(!nome||!valor){flash('Preencha o objetivo e o valor');return}
+  Object.assign(g,{nome,valor,guardado:Math.min(num('mGuard'),valor),alvo:+document.getElementById('mAlvo').value});S.sheet=null;S.anim=true;flash('Meta atualizada',nome);return}
  if(e.target.id==='composer'){const i=document.getElementById('chatIn');const v=i.value;i.value='';say(v);setTimeout(()=>document.getElementById('chatIn')?.focus({preventScroll:true}),0)}
  if(e.target.id==='addForm'){const i=document.getElementById('addIn');const v=i.value;i.value='';quickAdd(v)}
 });
 document.addEventListener('input',e=>{if(e.target.id==='catName'&&S.sheet){S.sheet.name=e.target.value;const p=document.getElementById('pvName');if(p)p.textContent=e.target.value||'Nome da categoria'}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet)closeSheet();if(e.key==='Enter'&&e.target.id==='catName'){e.preventDefault();saveCat()}if(e.key==='Enter'&&(e.target.id==='addVal'||e.target.id==='addDesc')){e.preventDefault();saveForm()}});
-window.addEventListener('resize',()=>{clearTimeout(render.r);render.r=setTimeout(render,150)});
+window.addEventListener('resize',()=>{applyInsets();clearTimeout(render.r);render.r=setTimeout(render,150)});
+function guardar(v){const g=S.metas.find(x=>x.id===S.sheet.gid);g.guardado=Math.min(g.valor,g.guardado+v);const done=g.guardado>=g.valor;S.sheet=null;S.anim=true;flash(done?'Meta batida! 🎉':'Guardado!',done?`${g.nome}: ${brl0(g.valor)} juntos`:`+ ${brl0(v)} para ${g.nome}`);if(done)setTimeout(confetti,350)}
+
+/* ---------- Android: barras do sistema e teclado ---------- */
+/* O app nativo chama window.__insets(topo, barraDeBaixo, teclado) em dp. */
+let INS=null,baseH=innerHeight;
+function applyInsets(){
+ if(!INS)return;const r=document.documentElement.style;
+ if(!INS.k)baseH=innerHeight;
+ const kb=INS.k?Math.max(0,INS.k-Math.max(0,baseH-innerHeight)):0; /* se a tela já encolheu com o teclado, não soma de novo */
+ r.setProperty('--sat',INS.t+'px');r.setProperty('--sab',INS.b+'px');r.setProperty('--kb',kb+'px');
+ if(kb){const a=document.activeElement;if(a&&a.tagName==='INPUT')setTimeout(()=>a.scrollIntoView({block:'nearest'}),60)}
+}
+window.__insets=(t,b,k)=>{INS={t:+t||0,b:+b||0,k:+k||0};applyInsets()};
+if(window.__insPending){window.__insets(...window.__insPending)}
+
+/* ---------- Botão voltar do Android ---------- */
+let lastBack=0;
+function handleBack(){
+ if(S.sheet){
+  if(S.sheet.mode==='new'){S.sheet={mode:'pick',gid:S.sheet.gid};render()}
+  else if(S.sheet.mode==='meta'&&S.sheet.confirm){S.sheet.confirm=false;render()}
+  else closeSheet();
+  return true;
+ }
+ const p=S.hist.pop();
+ if(p){Object.assign(S,p)}
+ else if(S.tab==='gastos'&&S.gview!=='lista'){S.gview='lista';S.filt='all'}
+ else if(S.tab!=='home'){S.tab='home';S.gview='lista';S.filt='all'}
+ else return false;
+ S.anim=true;render();document.querySelector('.scroll')?.scrollTo(0,0);return true;
+}
+const CapApp=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;
+if(CapApp){CapApp.addListener('backButton',()=>{
+ if(handleBack())return;
+ if(Date.now()-lastBack<2000){CapApp.exitApp();return}
+ lastBack=Date.now();flash('Toque em voltar de novo para sair');
+})}
 render();
 </script>
 
