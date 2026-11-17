@@ -553,6 +553,24 @@ canvas.cf{position:absolute;inset:0;pointer-events:none;z-index:40}
 .resbtn>span{flex:1}.resbtn svg{width:18px;height:18px;transition:transform .2s}
 .resbtn[aria-expanded="true"] svg{transform:rotate(180deg)}
 
+/* Contribuição por pessoa */
+.help{border-top:1px solid var(--line);margin-top:12px;padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.help .hh b{font-size:14px}
+.split.sb{margin:0}
+.hl{display:flex;flex-direction:column;gap:8px}
+.hp{display:flex;align-items:center;gap:10px}
+.hp .t{flex:1;min-width:0}.hp .t b{display:block;font-size:14px}.hp .t span{display:block;font-size:12.5px;color:var(--muted)}
+.hp em{font-style:normal;font-weight:700;font-size:13px}
+.hc{margin:0}
+.whosel{display:flex;gap:8px}
+.whosel button{flex:1;border:1px solid var(--line2);background:var(--bg);border-radius:14px;padding:9px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--fg)}
+.whosel button[aria-pressed="true"]{border-color:var(--g2);background:color-mix(in srgb,var(--g2) 12%,var(--bg))}
+.gl{display:flex;flex-direction:column;gap:14px;margin-top:14px}
+.gr .gt{display:flex;justify-content:space-between;gap:8px;font-size:14px;margin-bottom:6px}.gr .gt small{color:var(--muted)}
+.gr .split{margin:0 0 6px}
+.gr .gm{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.gr .gm span{display:flex;align-items:center;gap:6px}
+
 </style>
 
 <header class="proto">
@@ -651,8 +669,8 @@ const S={
  ],
  sugAssin:{desc:'Amazon Prime',v:19.9,meses:'set, out e nov',pag:'nu'},
  metas:[
-  {id:901,nome:'Viagem de férias em família',ic:'✈️',valor:6000,guardado:800,alvo:8},
-  {id:902,nome:'Reserva de emergência',ic:'💰',valor:20000,guardado:2500,alvo:13}
+  {id:901,nome:'Viagem de férias em família',ic:'✈️',valor:6000,guardado:800,alvo:8,por:{a:500,b:300},mes:{a:350,b:300}},
+  {id:902,nome:'Reserva de emergência',ic:'💰',valor:20000,guardado:2500,alvo:13,por:{a:1500,b:1000},mes:{a:300,b:200}}
  ],
  mov:[
   {id:1,dia:3,desc:'Aluguel',cat:'cas',v:1650,who:'a',pag:'pix',fixa:'f1'},
@@ -737,6 +755,11 @@ function resumoSemana(){
 function wfmt(t){return esc(t).replace(/\*([^*\n]+)\*/g,'<b>$1</b>')}
 
 /* ---------- Metas ---------- */
+const por=g=>g.por||(g.por={a:g.guardado||0,b:0}),mes=g=>g.mes||(g.mes={a:0,b:0});
+const nome1=w=>PEOPLE[w].nome;
+function shareBar(g){const P=por(g),v=g.valor||1;return `<div class="split sb" role="img" aria-label="Athos guardou ${brl0(P.a)} e Marina ${brl0(P.b)} de ${brl0(g.valor)}"><b style="flex:none;width:${Math.min(P.a/v*100,100).toFixed(1)}%;background:${PEOPLE.a.cor}"></b><b style="flex:none;width:${Math.min(P.b/v*100,100-Math.min(P.a/v*100,100)).toFixed(1)}%;background:${PEOPLE.b.cor}"></b><b style="flex:1;background:var(--line)"></b></div>`}
+function helpers(g,f,withBar){const P=por(g),M=mes(g),mt=M.a+M.b,done=g.guardado>=g.valor;
+ return `${withBar===false?'':shareBar(g)}<div class="hl">${['a','b'].map(w=>`<div class="hp">${wav(w,26)}<div class="t"><b>${esc(nome1(w))}</b><span class="num">${brl0(P[w])} guardado</span></div><em class="num">${M[w]?brl0(M[w])+'/mês':'sem valor/mês'}</em></div>`).join('')}</div>${done?'':mt>0?`<p class="sub hc">Combinado: <b>${brl0(mt)}/mês</b>. ${f&&mt>=f.need-1?'Isso cobre o prazo.':f?`Faltam ${brl0(f.need-mt)}/mês para o prazo.`:''}</p>`:`<button class="linkbtn" data-editmeta="${g.id}">Combinar quanto cada um guarda por mês</button>`}`}
 function forecast(){
  const media=(histTot(2)+histTot(3)+histTot(4))/3;let livre=RENDA-media;const sobra=livre;
  return {sobra,list:S.metas.map(g=>{const falta=Math.max(g.valor-g.guardado,0),need=falta/g.alvo,usa=Math.max(0,Math.min(need,livre)),ok=need<=livre+1;livre-=usa;const pace=usa>0?Math.ceil(falta/usa):null;const extra=ok?0:need-usa;return {g,falta,need,usa,ok,pace,extra,livreDepois:Math.max(livre,0),cuts:ok?null:cutsFor(extra)}})};
@@ -761,7 +784,7 @@ function goalCard(f){
   :`<p>Guardando o que sobra hoje (${brl0(f.usa)} por mês), vocês chegam lá em <b>${f.pace?mlabel(f.pace):'um prazo ainda indefinido'}</b>${f.pace?`, ${f.pace-g.alvo} ${f.pace-g.alvo===1?'mês':'meses'} depois do planejado`:''}. Para manter ${mlabel(g.alvo)}, faltam ${brl0(f.extra)} por mês.</p><p><b>Recomendamos estes ajustes:</b></p>
    <div class="cuts">${f.cuts.list.map(c=>`<div class="cut">${tile(c.c,'sm')}<span>${esc(c.c.nome)}: reduzir ${c.pct}%</span><b class="num">+${brl0(c.v)}/mês</b></div>`).join('')}</div>${f.cuts.rest>0?`<p class="sub">Mesmo com esses ajustes, faltariam ${brl0(f.cuts.rest)} por mês. Se preferir, dá para mudar o prazo para ${mlabel(f.pace)}.</p>`:''}`;
  return `<div class="card goal"><div class="gh">${ring(p,56,done?'var(--good)':'var(--amber)')}<div class="t"><b>${esc(g.nome)}</b><small class="num">${brl0(g.guardado)} de ${brl0(g.valor)} · até ${mlabel(g.alvo)}</small></div><span class="chip ${done||f.ok?'ok':'warn'}">${done?'Batida':f.ok?'No caminho':'Precisa ajuste'}</span></div>
- ${txt}${done?'':goalChart(f)}<div class="acts">${done?'':`<button class="btn sm" data-guardar="${g.id}">+ Guardar dinheiro</button>`}<button class="linkbtn" data-editmeta="${g.id}" aria-label="Editar ou excluir ${esc(g.nome)}">${ICON.edit}Editar</button></div></div>`;
+ ${txt}${done?'':goalChart(f)}<div class="help"><div class="hh"><b>Quem está ajudando</b></div>${helpers(g,f)}</div><div class="acts">${done?'':`<button class="btn sm" data-guardar="${g.id}">+ Guardar dinheiro</button>`}<button class="linkbtn" data-editmeta="${g.id}" aria-label="Editar ou excluir ${esc(g.nome)}">${ICON.edit}Editar</button></div></div>`;
 }
 
 /* ---------- Pedaços de tela ---------- */
@@ -915,6 +938,8 @@ function viewMetas(){
     <div class="row2"><div><label class="fl" for="gValor">Quanto custa</label><input id="gValor" inputmode="decimal" placeholder="Ex.: 8000" required autocomplete="off"></div>
     <div><label class="fl" for="gAlvo">Para quando</label><select id="gAlvo">${opts}</select></div></div>
     <label class="fl" for="gGuard">Já têm guardado (opcional)</label><input id="gGuard" inputmode="decimal" placeholder="Ex.: 500" autocomplete="off">
+    <div class="row2"><div><label class="fl" for="gMa">${esc(nome1('a'))} guarda por mês</label><input id="gMa" inputmode="decimal" placeholder="Ex.: 300" autocomplete="off"></div>
+    <div><label class="fl" for="gMb">${esc(nome1('b'))} guarda por mês</label><input id="gMb" inputmode="decimal" placeholder="Ex.: 300" autocomplete="off"></div></div>
     <button class="btn block">Calcular previsão</button>
     <p class="sub">Também dá para pedir pelo WhatsApp: "quero juntar 4 mil pra trocar o sofá até março".</p></form>`;
  const ins=`<div class="ins"><div class="ic">${ICON.tip}</div><div><b>Vocês costumam guardar ${brl0(F.sobra)} por mês</b><span>É a média do que sobrou nos últimos 3 meses. A gente usa esse valor para prever quando cada meta fica pronta.</span></div></div>`;
@@ -925,12 +950,18 @@ function viewMetas(){
 }
 function viewCasal(){
  const a=total(m=>m.who==='a'),b=total(m=>m.who==='b'),t=a+b;
+ const pg=w=>S.metas.reduce((s,g)=>s+por(g)[w],0),pt=pg('a')+pg('b');
+ const goalsC=S.metas.length?`<div class="card"><h3>Quem está ajudando nas metas</h3>
+  ${pt?`<div class="split">${['a','b'].map(w=>`<b style="width:${pg(w)/pt*100}%;background:${PEOPLE[w].cor}"></b>`).join('')}</div><div class="legend">${['a','b'].map(w=>`<span>${wav(w,24)} ${esc(nome1(w))} <b class="num">${brl0(pg(w))}</b> <small>${Math.round(pg(w)/pt*100)}%</small></span>`).join('')}</div>`:'<p class="sub">Ainda não há dinheiro guardado nas metas.</p>'}
+  <div class="gl">${forecast().list.map(f=>{const g=f.g,M=mes(g);return `<div class="gr"><div class="gt"><b>${esc(g.nome)}</b><small class="num">${brl0(g.guardado)} de ${brl0(g.valor)}</small></div>${shareBar(g)}<div class="gm">${['a','b'].map(w=>`<span>${wav(w,18)} ${brl0(por(g)[w])}${M[w]?` · ${brl0(M[w])}/mês`:''}</span>`).join('')}</div></div>`}).join('')}</div>
+  <button class="linkbtn" data-tab="metas" style="margin-top:6px">Combinar valor por mês nas metas</button></div>`:'';
  return `<div><h2 class="page">Casal</h2><p class="sub">Cada um lança do próprio WhatsApp. O painel é um só.</p></div>
  <div class="cols even"><div class="col">
   <div class="card"><h3>Quem lançou o quê</h3><div class="split"><b style="width:${a/t*100}%;background:#4F86E8"></b><b style="width:${b/t*100}%;background:#E07FA6"></b></div>
    <div class="legend"><span>${wav('a',24)} Athos <b class="num">${brl(a)}</b></span><span>${wav('b',24)} Marina <b class="num">${brl(b)}</b></span></div></div>
+  ${goalsC}
   <div class="card"><h3>Membros</h3>
-   <div class="profiles">${['a','b'].map(w=>{const p=PEOPLE[w];return `<div class="prof">${wav(w,84)}<b>${p.nome}</b><small class="num">${p.tel}</small><span class="st">${p.rec}</span><span class="gs num">${brl(total(m=>m.who===w))}</span><small>${w==='a'?'criou a casa':'entrou pelo convite'}</small></div>`}).join('')}</div>
+   <div class="profiles">${['a','b'].map(w=>{const p=PEOPLE[w];return `<div class="prof">${wav(w,84)}<b>${p.nome}</b><small class="num">${p.tel}</small><span class="st">${p.rec}</span><span class="gs num">${brl(total(m=>m.who===w))}</span><small>gastou no mês</small></div>`}).join('')}</div>
    <p class="sub" style="margin-top:6px">A foto e o recado vêm do perfil do WhatsApp de cada um.</p>
    <div class="invite" style="margin-top:10px"><code>tanotado.app.br/c/athos-marina-7Q2</code><button class="btn sm" data-act="copy">Copiar convite</button></div>
    <p class="sub" style="margin-top:8px">Mande o link para filhos ou outra pessoa da casa. Cada um com seu número.</p></div>
@@ -1005,6 +1036,7 @@ function sheetHtml(){
   body=`<div class="grab"></div><div class="sh-head"><h3>Guardar para a meta</h3><button data-close aria-label="Fechar">×</button></div>
   <div class="preview">${ring(g.guardado/g.valor,52)}<div><b>${esc(g.nome)}</b><div class="sub num" style="margin:0">Faltam ${brl0(falta)}</div></div></div>
   <div class="sug">${[100,300,500].filter(v=>v<falta).map(v=>`<button data-save="${v}">+ ${brl0(v)}</button>`).join('')}<button data-save="${falta}" style="background:var(--amber-soft);color:var(--amber-ink);font-weight:700">+ ${brl0(falta)} (o que falta)</button></div>
+  <div class="whosel" role="group" aria-label="Quem guardou">${['a','b'].map(w=>`<button data-gwho="${w}" aria-pressed="${(sh.who||'a')===w}">${wav(w,24)}${esc(nome1(w))}</button>`).join('')}</div>
   <label class="fl" for="gOutro">Outro valor</label><div class="outro"><input id="gOutro" inputmode="decimal" placeholder="Ex.: 250" autocomplete="off"><button class="btn" data-saveoutro>Guardar</button></div>
   <p class="sub" style="margin:0">Aqui vocês só anotam quanto separaram. O dinheiro continua na conta de vocês.</p>`;
  }else if(sh.mode==='meta'){
@@ -1016,7 +1048,10 @@ function sheetHtml(){
   <label class="fl" for="mNome">Objetivo</label><input id="mNome" value="${esc(g.nome)}" autocomplete="off" required>
   <div class="row2"><div><label class="fl" for="mValor">Quanto custa</label><input id="mValor" inputmode="decimal" value="${fmt(g.valor).replace(',00','')}" autocomplete="off"></div>
   <div><label class="fl" for="mAlvo">Para quando</label><select id="mAlvo">${opts}</select></div></div>
-  <label class="fl" for="mGuard">Já guardado</label><input id="mGuard" inputmode="decimal" value="${fmt(g.guardado).replace(',00','')}" autocomplete="off">
+  <div class="row2"><div><label class="fl" for="mGa">${esc(nome1('a'))} já guardou</label><input id="mGa" inputmode="decimal" value="${fmt(por(g).a).replace(',00','')}" autocomplete="off"></div>
+  <div><label class="fl" for="mGb">${esc(nome1('b'))} já guardou</label><input id="mGb" inputmode="decimal" value="${fmt(por(g).b).replace(',00','')}" autocomplete="off"></div></div>
+  <div class="row2"><div><label class="fl" for="mMa">${esc(nome1('a'))} guarda por mês</label><input id="mMa" inputmode="decimal" value="${mes(g).a?fmt(mes(g).a).replace(',00',''):''}" placeholder="Ex.: 300" autocomplete="off"></div>
+  <div><label class="fl" for="mMb">${esc(nome1('b'))} guarda por mês</label><input id="mMb" inputmode="decimal" value="${mes(g).b?fmt(mes(g).b).replace(',00',''):''}" placeholder="Ex.: 300" autocomplete="off"></div></div>
   <button class="btn block">Salvar alterações</button></form>
   <button class="btn danger block" data-delask>Excluir meta</button>`}`;
  }else{
@@ -1051,7 +1086,7 @@ function render(){
  document.querySelectorAll('#daySeg button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.day===S.day));
  HIDE=!!S.hide&&S.tab!=='chat';const V={home:viewHome,chat:viewChat,gastos:viewGastos,metas:viewMetas,casal:viewCasal,plano:viewPlano,avisos:viewAvisos}[S.tab]();HIDE=false;
  const toast=S.toast?`<div class="toast ${S.toast.fresh?'fresh':''}" role="status"><div class="ck"><svg width="22" height="18" viewBox="0 0 20 16"><path d="M2.5 8.5l5 5L17.5 2.5" fill="none" stroke="#F2A516" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><b>${esc(S.toast.t)}</b>${S.toast.s?`<span>${esc(S.toast.s)}</span>`:''}</div></div>`:'';
- const keep=['askIn','chatIn','addIn','addVal','addDesc','catOrc','gNome','gValor','gGuard','gAlvo','gOutro','mNome','mValor','mGuard','mAlvo'].map(id=>[id,document.getElementById(id)?.value||'']);
+ const keep=['mGa','mGb','mMa','mMb','gMa','gMb','askIn','chatIn','addIn','addVal','addDesc','catOrc','gNome','gValor','gGuard','gAlvo','gOutro','mNome','mValor','mGuard','mAlvo'].map(id=>[id,document.getElementById(id)?.value||'']);
  const ae=document.activeElement,focusId=ae&&ae.id&&ae.tagName==='INPUT'?ae.id:null,selS=focusId?ae.selectionStart:null,selE=focusId?ae.selectionEnd:null;
  const prevScroll=document.querySelector('.scroll')?.scrollTop||0;
  const sheet=sheetHtml(),A=alerts().length;
@@ -1259,6 +1294,7 @@ document.addEventListener('click',e=>{
  else if('delask' in D){S.sheet.confirm=true;render()}
  else if('delno' in D){S.sheet.confirm=false;render()}
  else if('saveoutro' in D){const v=parseFloat((document.getElementById('gOutro')?.value||'').replace(/\./g,'').replace(',','.'))||0;if(!(v>0)){document.getElementById('gOutro')?.focus();flash('Digite quanto vocês guardaram');return}guardar(v)}
+ else if(D.gwho){S.sheet.who=D.gwho;render()}
  else if(D.guardar){S.sheet={mode:'guardar',gid:+D.guardar};render()}
  else if(D.save){guardar(+D.save)}
  else if(D.pay){pay(D.pay)}
@@ -1298,12 +1334,12 @@ document.addEventListener('submit',e=>{
  e.preventDefault();
  if(e.target.id==='metaForm'){const num=id=>parseFloat((document.getElementById(id).value||'').replace(/\./g,'').replace(',','.'))||0;
   const nome=document.getElementById('gNome').value.trim(),valor=num('gValor');if(!nome||!valor){flash('Preencha o objetivo e o valor');return}
-  ['gNome','gValor','gGuard'].forEach(id=>document.getElementById(id).value='');
-  S.metas.unshift({id:++seq,nome,ic:'🎯',valor,guardado:num('gGuard'),alvo:+document.getElementById('gAlvo').value});S.anim=true;flash('Previsão calculada',nome);return}
+  const gd=Math.min(num('gGuard'),valor),ma=num('gMa'),mb=num('gMb');['gNome','gValor','gGuard','gMa','gMb'].forEach(id=>document.getElementById(id).value='');
+  S.metas.unshift({id:++seq,nome,ic:'🎯',valor,guardado:gd,alvo:+document.getElementById('gAlvo').value,por:{a:gd/2,b:gd/2},mes:{a:ma,b:mb}});S.anim=true;flash('Previsão calculada',nome);return}
  if(e.target.id==='metaEdit'){const num=id=>parseFloat((document.getElementById(id).value||'').replace(/\./g,'').replace(',','.'))||0;
   const g=S.metas.find(x=>x.id===S.sheet.gid),nome=document.getElementById('mNome').value.trim(),valor=num('mValor');
   if(!nome||!valor){flash('Preencha o objetivo e o valor');return}
-  Object.assign(g,{nome,valor,guardado:Math.min(num('mGuard'),valor),alvo:+document.getElementById('mAlvo').value});S.sheet=null;S.anim=true;flash('Meta atualizada',nome);return}
+  {const pa=num('mGa'),pb=num('mGb');Object.assign(g,{nome,valor,guardado:Math.min(pa+pb,valor),por:{a:pa,b:pb},mes:{a:num('mMa'),b:num('mMb')},alvo:+document.getElementById('mAlvo').value})}S.sheet=null;S.anim=true;flash('Meta atualizada',nome);return}
  if(e.target.id==='composer'){const i=document.getElementById('chatIn');const v=i.value;i.value='';say(v);setTimeout(()=>document.getElementById('chatIn')?.focus({preventScroll:true}),0)}
  if(e.target.id==='askForm'){const i=document.getElementById('askIn');const v=i.value.trim();i.value='';go({tab:'chat'});if(v)say(v);return}
  if(e.target.id==='addForm'){const i=document.getElementById('addIn');const v=i.value;i.value='';quickAdd(v)}
@@ -1311,7 +1347,7 @@ document.addEventListener('submit',e=>{
 document.addEventListener('input',e=>{if(e.target.id==='catName'&&S.sheet){S.sheet.name=e.target.value;const p=document.getElementById('pvName');if(p)p.textContent=e.target.value||'Nome da categoria'}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet)closeSheet();if(e.key==='Enter'&&e.target.id==='catName'){e.preventDefault();saveCat()}if(e.key==='Enter'&&(e.target.id==='addVal'||e.target.id==='addDesc')){e.preventDefault();saveForm()}});
 window.addEventListener('resize',()=>{applyInsets();clearTimeout(render.r);render.r=setTimeout(render,150)});
-function guardar(v){const g=S.metas.find(x=>x.id===S.sheet.gid);g.guardado=Math.min(g.valor,g.guardado+v);const done=g.guardado>=g.valor;S.sheet=null;S.anim=true;flash(done?'Meta batida! 🎉':'Guardado!',done?`${g.nome}: ${brl0(g.valor)} juntos`:`+ ${brl0(v)} para ${g.nome}`);if(done)setTimeout(confetti,350)}
+function guardar(v){const g=S.metas.find(x=>x.id===S.sheet.gid),w=S.sheet.who||'a',add=Math.min(v,Math.max(g.valor-g.guardado,0));por(g)[w]+=add;g.guardado=Math.min(g.valor,g.guardado+v);const done=g.guardado>=g.valor;S.sheet=null;S.anim=true;flash(done?'Meta batida! 🎉':'Guardado!',done?`${g.nome}: ${brl0(g.valor)} juntos`:`${nome1(w)}: + ${brl0(add)} para ${g.nome}`);if(done)setTimeout(confetti,350)}
 
 /* ---------- Android: barras do sistema e teclado ---------- */
 /* O app nativo chama window.__insets(topo, barraDeBaixo, teclado) em dp. */
